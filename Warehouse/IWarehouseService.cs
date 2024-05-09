@@ -4,5 +4,6 @@ namespace GakkoAppVertical.Warehouse;
 
 public interface IWarehouseService
 {
-    Task<IActionResult> AddProductWarehouse(ProductWarehouse productWarehouse);
+    Task<IActionResult> AddProductToWarehouse(ProductWarehouse productWarehouse);
+    Task<IActionResult> AddProductToWarehouseStored(ProductWarehouse productWarehouse);
 }

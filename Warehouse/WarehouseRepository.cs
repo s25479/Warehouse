@@ -1,4 +1,5 @@
 using System.Data.SqlClient;
+using System.Data;
 
 namespace GakkoAppVertical.Warehouse;
 
@@ -92,6 +93,7 @@ public class WarehouseRepository : IWarehouseRepository
         cmd.Parameters.AddWithValue("@CurrentDateTime", currentDateTime);
         cmd.Parameters.AddWithValue("@IdOrder", orderId);
 
+        await connection.OpenAsync();
         var transaction = await connection.BeginTransactionAsync();
         cmd.Transaction = (SqlTransaction)transaction;  
 
@@ -117,5 +119,17 @@ public class WarehouseRepository : IWarehouseRepository
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    public async Task<int> AddProductToWarehouseStored(ProductWarehouse productWarehouse)
+    {
+        using var connection = new SqlConnection(configuration["ConnectionStrings:DefaultConnection"]);
+        using var cmd = new SqlCommand("AddProductToWarehouse", connection)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+
+        await connection.OpenAsync();
+        return (int)(decimal) await cmd.ExecuteScalarAsync();
     }
 }

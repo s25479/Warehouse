@@ -11,7 +11,7 @@ public class WarehouseService : IWarehouseService
         this.warehouseRepository = warehouseRepository;
     }
 
-    public async Task<IActionResult> AddProductWarehouse(ProductWarehouse productWarehouse)
+    public async Task<IActionResult> AddProductToWarehouse(ProductWarehouse productWarehouse)
     {
         var product = await warehouseRepository.GetProduct(productWarehouse.IdProduct.Value);
         if (product == null)
@@ -34,6 +34,11 @@ public class WarehouseService : IWarehouseService
             return BadRequest();
 
         return new ObjectResult(warehouseRepository.AddProductToWarehouse(productWarehouse.IdWarehouse.Value, productWarehouse.IdProduct.Value, order.IdOrder, productWarehouse.Amount.Value, product.Price)){StatusCode = StatusCodes.Status200OK};
+    }
+
+    public async Task<IActionResult> AddProductToWarehouseStored(ProductWarehouse productWarehouse)
+    {
+        return new ObjectResult(await warehouseRepository.AddProductToWarehouseStored(productWarehouse)){StatusCode = StatusCodes.Status200OK};
     }
 
     private ObjectResult BadRequest()
