@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace GakkoAppVertical.Warehouse;
 
 public class WarehouseService : IWarehouseService
@@ -9,8 +11,33 @@ public class WarehouseService : IWarehouseService
         this.warehouseRepository = warehouseRepository;
     }
 
-    public void AddProductWarehouse(ProductWarehouse productWarehouse)
+    public async Task<IActionResult> AddProductWarehouse(ProductWarehouse productWarehouse)
     {
-        warehouseRepository.AddProductWarehouse(productWarehouse);
+        var product = await warehouseRepository.GetProduct(productWarehouse.IdProduct.Value);
+        if (product == null)
+            return BadRequest();
+
+        if (!await warehouseRepository.HasWarehouse(productWarehouse.IdWarehouse.Value))
+            return BadRequest();
+
+        if (productWarehouse.Amount.Value <= 0)
+            return BadRequest();
+
+        var order = await warehouseRepository.GetOrderCreatedBefore(
+            productWarehouse.IdProduct.Value,
+            productWarehouse.Amount.Value,
+            productWarehouse.CreatedAt);
+        if (order == null || order.FulfilledAt != null)
+            return BadRequest();
+
+        if (await warehouseRepository.HasOrderedProductInWarehouse(order.IdOrder))
+            return BadRequest();
+
+        return new ObjectResult(null){StatusCode = StatusCodes.Status200OK};
+    }
+
+    private ObjectResult BadRequest()
+    {
+        return new ObjectResult(null){StatusCode = StatusCodes.Status400BadRequest};
     }
 }

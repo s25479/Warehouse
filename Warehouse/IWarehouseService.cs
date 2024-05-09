@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace GakkoAppVertical.Warehouse;
 
 public interface IWarehouseService
 {
-    void AddProductWarehouse(ProductWarehouse productWarehouse);
+    Task<IActionResult> AddProductWarehouse(ProductWarehouse productWarehouse);
 }

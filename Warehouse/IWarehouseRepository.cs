@@ -2,5 +2,8 @@ namespace GakkoAppVertical.Warehouse;
 
 public interface IWarehouseRepository
 {
-    void AddProductWarehouse(ProductWarehouse productWarehouse);
+    Task<Product> GetProduct(int productId);
+    Task<bool> HasWarehouse(int warehouseId);
+    Task<Order> GetOrderCreatedBefore(int productId, int amount, DateTime beforeDate);
+    Task<bool> HasOrderedProductInWarehouse(int orderId);
 }

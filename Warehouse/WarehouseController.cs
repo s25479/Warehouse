@@ -14,11 +14,16 @@ public class WarehouseController : ControllerBase
         this.warehouseService = warehouseService;
     }
 
-    [HttpGet]
-    public IActionResult AddProductWarehouse([FromBody] ProductWarehouse productWarehouse)
+    [HttpPost]
+    public async Task<IActionResult> AddProductWarehouse([FromBody] ProductWarehouse productWarehouse)
     {
-        warehouseService.AddProductWarehouse(productWarehouse);
-        return Ok();
+        try
+        {
+            return await warehouseService.AddProductWarehouse(productWarehouse);
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
-
 }
