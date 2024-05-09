@@ -33,7 +33,7 @@ public class WarehouseService : IWarehouseService
         if (await warehouseRepository.HasOrderedProductInWarehouse(order.IdOrder))
             return BadRequest();
 
-        return new ObjectResult(null){StatusCode = StatusCodes.Status200OK};
+        return new ObjectResult(warehouseRepository.AddProductToWarehouse(productWarehouse.IdWarehouse.Value, productWarehouse.IdProduct.Value, order.IdOrder, productWarehouse.Amount.Value, product.Price)){StatusCode = StatusCodes.Status200OK};
     }
 
     private ObjectResult BadRequest()

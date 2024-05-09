@@ -80,4 +80,42 @@ public class WarehouseRepository : IWarehouseRepository
         using var reader = await cmd.ExecuteReaderAsync();
         return reader.HasRows;
     }
+
+    public async Task<int> AddProductToWarehouse(int warehouseId, int productId, int orderId, int amount, decimal productPrice)
+    {
+        DateTime currentDateTime = DateTime.Now;
+
+        using var connection = new SqlConnection(configuration["ConnectionStrings:DefaultConnection"]);
+        using var cmd = new SqlCommand();
+        cmd.Connection = connection;
+        cmd.CommandText = "UPDATE \"Order\" SET FulfilledAt = @CurrentDateTime WHERE IdOrder = @IdOrder";
+        cmd.Parameters.AddWithValue("@CurrentDateTime", currentDateTime);
+        cmd.Parameters.AddWithValue("@IdOrder", orderId);
+
+        var transaction = await connection.BeginTransactionAsync();
+        cmd.Transaction = (SqlTransaction)transaction;  
+
+        try
+        {
+            await cmd.ExecuteNonQueryAsync();
+
+            cmd.CommandText = "INSERT INTO Product_Warehouse (IdWarehouse, IdProduct, IdOrder, Amount, Price, CreatedAt) VALUES (@IdWarehouse, @IdProduct, @IdOrder, @Amount, @Price, @CreatedAt); SELECT @@IDENTITY";
+            cmd.Parameters.Clear();
+            cmd.Parameters.AddWithValue("@IdWarehouse", warehouseId);
+            cmd.Parameters.AddWithValue("@IdProduct", productId);
+            cmd.Parameters.AddWithValue("@IdOrder", orderId);
+            cmd.Parameters.AddWithValue("@Amount", amount);
+            cmd.Parameters.AddWithValue("@Price", productPrice * amount);
+            cmd.Parameters.AddWithValue("@CreatedAt", currentDateTime);
+
+            var insertedId = (int)(decimal) await cmd.ExecuteScalarAsync();
+            await transaction.CommitAsync();
+            return insertedId;
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
 }
